@@ -4,11 +4,14 @@
 % Publication-ready figures for the TFG.
 %
 % FIGURES PRODUCED:
-%   1. Baseline RMS %MVC  - EXO vs NOEXO (bars + individual paired dots)
-%   2. Post-fatigue RMS %MVC - EXO vs NOEXO (bars + individual paired dots)
-%   3. Delta MDF (Hz)     - EXO vs NOEXO (bars + individual paired dots)
+%   1. Baseline RMS %MVC  - EXO vs NOEXO (boxplots + mean dot)
+%   2. Post-fatigue RMS %MVC - EXO vs NOEXO (boxplots + mean dot)
+%   3. Delta MDF (Hz)     - EXO vs NOEXO (boxplots + mean dot)
 %   4. MDF trajectory across the time-normalised fatigue block (0-100%)
-%   5. Endurance          - n_reps + block_duration_s (bars + paired dots)
+%   5. Endurance          - n_reps + block_duration_s (boxplots + mean dot)
+%
+% No block-level title on figures 1/2/3/5 (that goes in the table/figure
+% caption in the document). Per-muscle panel titles are kept.
 %
 % INPUTS:
 %   step3_results.mat  - output of step3_statistics.m
@@ -29,8 +32,6 @@ rng(1);   % reproducible jitter positions
 % -------------------------------------------------------------------------
 COL_EXO   = [0.18 0.38 0.75];   % blue
 COL_NOEXO = [0.78 0.18 0.18];   % red
-COL_DOT   = [0.20 0.20 0.20];   % dark gray for individual dots
-COL_LINE  = [0.70 0.70 0.70];   % light gray for connecting lines
 
 DASH      = char(8211);   % en-dash (encoding-safe)
 PM        = char(177);    % plus-minus sign (encoding-safe)
@@ -81,10 +82,10 @@ fprintf('Figures will be saved to: %s\n', output_dir);
 % =========================================================================
 % FIGURE 1 - Baseline RMS %MVC
 % =========================================================================
-fig1 = plot_paired_bars(rms_base_exo, rms_base_noexo, ...
+fig1 = plot_paired_boxplots(rms_base_exo, rms_base_noexo, ...
     R.res_base, muscle_long, ...
     ['Baseline RMS (%MVC) ' DASH ' EXO vs NOEXO'], 'RMS (%MVC)', ...
-    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO, COL_DOT, COL_LINE);
+    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO);
 
 save_fig(fig1, fullfile(output_dir, 'fig1_baseline_rms.png'));
 fprintf('Fig 1 saved.\n');
@@ -92,10 +93,10 @@ fprintf('Fig 1 saved.\n');
 % =========================================================================
 % FIGURE 2 - Post-fatigue RMS %MVC
 % =========================================================================
-fig2 = plot_paired_bars(rms_post_exo, rms_post_noexo, ...
+fig2 = plot_paired_boxplots(rms_post_exo, rms_post_noexo, ...
     R.res_post, muscle_long, ...
     ['Post-fatigue RMS (%MVC) ' DASH ' EXO vs NOEXO'], 'RMS (%MVC)', ...
-    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO, COL_DOT, COL_LINE);
+    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO);
 
 save_fig(fig2, fullfile(output_dir, 'fig2_postfatigue_rms.png'));
 fprintf('Fig 2 saved.\n');
@@ -103,10 +104,10 @@ fprintf('Fig 2 saved.\n');
 % =========================================================================
 % FIGURE 3 - Delta MDF
 % =========================================================================
-fig3 = plot_paired_bars(dmdf_exo, dmdf_noexo, ...
+fig3 = plot_paired_boxplots(dmdf_exo, dmdf_noexo, ...
     R.res_mdf, muscle_long, ...
     ['\DeltaMDF (Hz) ' DASH ' EXO vs NOEXO'], '\DeltaMDF (Hz)', ...
-    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO, COL_DOT, COL_LINE);
+    R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO);
 
 % Add horizontal reference line at 0
 for ax_idx = 1:N_CH
@@ -139,76 +140,24 @@ end
 % FIGURE 5 - Endurance outcomes
 % =========================================================================
 fig5 = figure('Name', 'Fig5 Endurance', 'NumberTitle', 'off', ...
-              'Position', [100 100 700 480]);
+              'Position', [100 100 700 420]);
 
 ok_r = ~isnan(nreps_exo) & ~isnan(nreps_noexo);
 ok_d = ~isnan(dur_exo)   & ~isnan(dur_noexo);
 
 outcomes   = {nreps_exo(ok_r), nreps_noexo(ok_r); ...
               dur_exo(ok_d),   dur_noexo(ok_d)};
-titles_end = {'Number of repetitions', 'Block duration (s)'};
-sig_bonf   = [false, false];   % endurance tested at alpha=0.05 (no Bonferroni)
-sig_nom    = [R.res_end.nreps.sig,  R.res_end.duration.sig];
+titles_end = {'n_{reps}', 'Block duration (s)'};
+p_end      = [NaN, NaN];   % endurance tested at alpha=0.05 (no Bonferroni)
+if R.res_end.nreps.sig,    p_end(1) = 0.01; end   % below 0.05 -> dagger only (never Bonferroni here)
+if R.res_end.duration.sig, p_end(2) = 0.01; end
 
-bw = 0.3;
 for sp = 1:2
     ax = subplot(1, 2, sp);
-    hold(ax, 'on');
-
-    ve  = outcomes{sp, 1};
-    vn  = outcomes{sp, 2};
-    me  = mean(ve);  mn  = mean(vn);
-    sem_e = std(ve) / sqrt(numel(ve));
-    sem_n = std(vn) / sqrt(numel(vn));
-
-    b1 = bar(ax, 1-bw/2, me, bw, 'FaceColor', COL_EXO,   'FaceAlpha', 0.75, 'EdgeColor', 'none');
-    b2 = bar(ax, 1+bw/2, mn, bw, 'FaceColor', COL_NOEXO, 'FaceAlpha', 0.75, 'EdgeColor', 'none');
-    errorbar(ax, 1-bw/2, me, sem_e, 'k.', 'LineWidth', 1.2, 'HandleVisibility', 'off');
-    errorbar(ax, 1+bw/2, mn, sem_n, 'k.', 'LineWidth', 1.2, 'HandleVisibility', 'off');
-
-    % Individual paired dots
-    jit = 0.04;
-    for s_idx = 1:numel(ve)
-        jx = (rand - 0.5) * jit;
-        plot(ax, [1-bw/2+jx, 1+bw/2+jx], [ve(s_idx), vn(s_idx)], ...
-             '-', 'Color', COL_LINE, 'LineWidth', 0.8, 'HandleVisibility', 'off');
-        plot(ax, 1-bw/2+jx, ve(s_idx), 'o', 'MarkerFaceColor', COL_DOT, ...
-             'MarkerEdgeColor', 'w', 'MarkerSize', 5, 'HandleVisibility', 'off');
-        plot(ax, 1+bw/2+jx, vn(s_idx), 'o', 'MarkerFaceColor', COL_DOT, ...
-             'MarkerEdgeColor', 'w', 'MarkerSize', 5, 'HandleVisibility', 'off');
-    end
-
-    % Significance marker
-    all_vals = [ve; vn];
-    y_range  = max(all_vals) - min(all_vals);
-    y_top    = max(all_vals) + 0.12 * y_range;
-    if sig_bonf(sp)
-        sig_str = '***';
-    elseif sig_nom(sp)
-        sig_str = DAGGER;
-    else
-        sig_str = '';
-    end
-    if ~isempty(sig_str)
-        y_line = max(all_vals) + 0.07 * y_range;
-        plot(ax, [1-bw/2, 1+bw/2], [y_line, y_line], 'k-', ...
-             'LineWidth', 0.8, 'HandleVisibility', 'off');
-        text(ax, 1, y_top, sig_str, 'HorizontalAlignment', 'center', ...
-             'FontSize', 13, 'FontWeight', 'bold', 'Color', 'k');
-    end
-
-    set(ax, 'XTick', [], 'XLim', [0.5 1.5]);
+    box_panel(ax, outcomes{sp,1}, outcomes{sp,2}, titles_end{sp}, ...
+              p_end(sp), R.ALPHA_BONF, DAGGER, COL_EXO, COL_NOEXO);
     ylabel(ax, titles_end{sp});
-    title(ax, titles_end{sp}, 'FontSize', 10, 'FontWeight', 'bold');
-    grid(ax, 'on'); ax.GridAlpha = 0.15;
-
-    if sp == 1
-        legend(ax, [b1 b2], {'EXO', 'NOEXO'}, 'Location', 'northeast', 'Box', 'off');
-    end
 end
-
-sgtitle(fig5, ['Endurance outcomes ' DASH ' EXO vs NOEXO (mean ' PM ' SEM + individual)'], ...
-        'FontSize', 11, 'FontWeight', 'bold');
 
 save_fig(fig5, fullfile(output_dir, 'fig5_endurance.png'));
 fprintf('Fig 5 saved.\n');
@@ -219,92 +168,80 @@ fprintf('\nAll figures saved to: %s\n', output_dir);
 % LOCAL FUNCTIONS  (must be at end of script - MATLAB R2016b+)
 % =========================================================================
 
-function fig = plot_paired_bars(mat_exo, mat_noexo, res, mlong, ...
-                                fig_title, y_label, alpha_bonf, dagger, ...
-                                col_e, col_n, col_dot, col_line)
-% Grouped bar chart per muscle with individual paired dots.
+function fig = plot_paired_boxplots(mat_exo, mat_noexo, res, mlong, ...
+                                    fig_name, y_label, alpha_bonf, dagger, ...
+                                    col_e, col_n)
+% Boxplot per muscle (EXO vs NOEXO): box + median + whiskers + mean dot.
 % Significance markers from res.p_test and alpha_bonf.
 % *** = Bonferroni significant; dagger = nominal p < 0.05
+% fig_name is used only as the figure window title (not drawn on the plot).
 
     N_CH = size(mat_exo, 2);
-    fig  = figure('Name', fig_title, 'NumberTitle', 'off', ...
-                  'Position', [50 50 1500 440]);
-
-    bw  = 0.32;
-    jit = 0.06;
+    fig  = figure('Name', fig_name, 'NumberTitle', 'off', ...
+                  'Position', [50 50 1500 350]);
 
     for ch = 1:N_CH
         ax = subplot(1, N_CH, ch);
-        hold(ax, 'on');
 
         e_ok  = mat_exo(:, ch);
         no_ok = mat_noexo(:, ch);
         valid = ~isnan(e_ok) & ~isnan(no_ok);
         ev    = e_ok(valid);
         nv    = no_ok(valid);
-        n_ok  = sum(valid);
 
-        if n_ok < 3
+        if sum(valid) < 3
             title(ax, mlong{ch}, 'FontSize', 8);
             continue;
         end
 
-        me    = mean(ev);    mn    = mean(nv);
-        sem_e = std(ev) / sqrt(n_ok);
-        sem_n = std(nv) / sqrt(n_ok);
+        p = NaN;
+        if isfield(res, 'p_test'), p = res.p_test(ch); end
 
-        % Bars
-        b1 = bar(ax, 1-bw/2, me, bw, 'FaceColor', col_e, 'FaceAlpha', 0.75, 'EdgeColor', 'none');
-        b2 = bar(ax, 1+bw/2, mn, bw, 'FaceColor', col_n, 'FaceAlpha', 0.75, 'EdgeColor', 'none');
-
-        % SEM error bars
-        errorbar(ax, 1-bw/2, me, sem_e, 'k.', 'LineWidth', 1.2, 'HandleVisibility', 'off');
-        errorbar(ax, 1+bw/2, mn, sem_n, 'k.', 'LineWidth', 1.2, 'HandleVisibility', 'off');
-
-        % Individual paired dots + connecting lines
-        for s = 1:n_ok
-            jx = (rand - 0.5) * jit;
-            plot(ax, [1-bw/2+jx, 1+bw/2+jx], [ev(s), nv(s)], ...
-                 '-', 'Color', col_line, 'LineWidth', 0.8, 'HandleVisibility', 'off');
-            plot(ax, 1-bw/2+jx, ev(s), 'o', 'MarkerFaceColor', col_dot, ...
-                 'MarkerEdgeColor', 'w', 'MarkerSize', 4, 'HandleVisibility', 'off');
-            plot(ax, 1+bw/2+jx, nv(s), 'o', 'MarkerFaceColor', col_dot, ...
-                 'MarkerEdgeColor', 'w', 'MarkerSize', 4, 'HandleVisibility', 'off');
-        end
-
-        % Significance marker
-        if isfield(res, 'p_test') && ~isnan(res.p_test(ch))
-            p        = res.p_test(ch);
-            all_vals = [ev; nv];
-            y_range  = max(all_vals) - min(all_vals);
-            y_top    = max(all_vals) + 0.12 * y_range;
-            if p < alpha_bonf
-                sig_str = '***';
-            elseif p < 0.05
-                sig_str = dagger;
-            else
-                sig_str = '';
-            end
-            if ~isempty(sig_str)
-                y_line = max(all_vals) + 0.07 * y_range;
-                plot(ax, [1-bw/2, 1+bw/2], [y_line, y_line], 'k-', ...
-                     'LineWidth', 0.8, 'HandleVisibility', 'off');
-                text(ax, 1, y_top, sig_str, 'HorizontalAlignment', 'center', ...
-                     'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
-            end
-        end
-
-        set(ax, 'XTick', [], 'XLim', [0.5 1.5]);
-        title(ax, mlong{ch}, 'FontSize', 8, 'FontWeight', 'bold');
-        grid(ax, 'on'); ax.GridAlpha = 0.15;
+        box_panel(ax, ev, nv, mlong{ch}, p, alpha_bonf, dagger, col_e, col_n);
 
         if ch == 1
             ylabel(ax, y_label, 'FontSize', 9);
-            legend(ax, [b1 b2], {'EXO', 'NOEXO'}, 'Location', 'best', 'Box', 'off', 'FontSize', 7);
+        end
+    end
+end
+
+
+function box_panel(ax, ve, vn, ttl, p, alpha_bonf, dagger, col_e, col_n)
+% Draws one EXO/NOEXO boxplot pair on axes ax (box + median + whiskers +
+% mean dot), with a significance marker above the boxes if p < 0.05
+% (dagger) or p < alpha_bonf (***). Used for figures 1, 2, 3 and 5.
+
+    data   = [ve; vn];
+    groups = [ones(numel(ve),1); 2*ones(numel(vn),1)];
+    boxplot(data, groups, 'Labels', {'EXO','NOEXO'}, 'Colors', [col_e; col_n]);
+    hold(ax, 'on');
+    plot(ax, 1, mean(ve), 'ko', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+    plot(ax, 2, mean(vn), 'ko', 'MarkerFaceColor', 'k', 'MarkerSize', 5);
+
+    if ~isnan(p)
+        all_vals = [ve; vn];
+        y_max  = max(all_vals);
+        y_rng  = y_max - min(all_vals);
+        y_line = y_max + 0.08 * y_rng;
+
+        if p < alpha_bonf
+            sig_str = '***';
+        elseif p < 0.05
+            sig_str = dagger;
+        else
+            sig_str = '';
+        end
+        if ~isempty(sig_str)
+            plot(ax, [1 2], [y_line y_line], 'k-', 'LineWidth', 0.8, 'HandleVisibility', 'off');
+            text(ax, 1.5, y_line, sig_str, 'HorizontalAlignment', 'center', ...
+                 'VerticalAlignment', 'bottom', 'FontSize', 12);
+            ylim(ax, [min(all_vals) - 0.05*y_rng, y_line + 0.15*y_rng]);
         end
     end
 
-    sgtitle(fig, fig_title, 'FontSize', 11, 'FontWeight', 'bold');
+    hold(ax, 'off');
+    title(ax, ttl, 'FontSize', 8, 'FontWeight', 'bold');
+    grid(ax, 'on'); ax.GridAlpha = 0.15;
 end
 
 
