@@ -70,7 +70,7 @@ de rehabilitación."*
   (replaces the older two-step workflow).
 - Auto-detects CSV format (European semicolon/comma or standard).
 
-### 4. `step2_mdf_v5.m`
+### 4. `step2_mdf.m`
 
 **Purpose:**
 - Reads `pre_[name].mat` and computes Median Frequency (MDF) per repetition
@@ -124,7 +124,7 @@ de rehabilitación."*
   envelopes between EXO and NOEXO recordings of the same subject.
 - `step2_mdf_window_comparison.m`: compares three spectral window
   strategies for MDF estimation; documents why the strategy used in
-  `step2_mdf_v5.m` was chosen.
+  `step2_mdf.m` was chosen.
 
 ### `archive/` — superseded development versions
 
@@ -135,7 +135,7 @@ of the active pipeline.
 ## How to Use
 
 1. **Quality control:** run `data_quality.m` on the raw recordings.
-2. **Extract MVC reference:** run `step0_mvc_vFinal.m` on the subject's MVC
+2. **Extract MVC reference:** run `step0_mvc.m` on the subject's MVC
    recordings.
 3. **Preprocess:** run `step1_preprocess.m` on each EXO/NOEXO CSV to filter,
    segment, and compute RMS %MVC.
