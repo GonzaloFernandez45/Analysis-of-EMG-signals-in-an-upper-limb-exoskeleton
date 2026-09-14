@@ -4,10 +4,10 @@
 % Compares three spectral window strategies for MDF estimation:
 %
 %   A - Current (v5): ECR onset/offset + 10% edge trim (middle 80%)
-%   B - Fixed centred: ±0.5 s window around rep centre (1.0 s total)
+%   B - Fixed centred: �0.5 s window around rep centre (1.0 s total)
 %   C - Muscle-specific: window centred on each muscle's RMS peak
 %
-% Input: one or more mdf5_[name].mat files (from step2_mdf_v5.m) +
+% Input: one or more mdf5_[name].mat files (from step2_mdf.m) +
 %        the corresponding pre_[name].mat files (for raw signal).
 %
 % Selection criterion (non-circular, per ChatGPT debate Aug 2026):
@@ -15,14 +15,13 @@
 %   - CV of MDF across reps per channel (lower = more stable estimation)
 %   - Visual coincidence with active muscle windows (manual inspection)
 %   Strategy that minimises CV AND maximises valid% wins.
-%   If A ≈ B → keep A for simplicity.
+%   If A almost the same as B, keep A for simplicity.
 %
 % After computing A/B/C, the script also shows:
 %   - Delta MDF comparison (as sensitivity, NOT as selection criterion)
 %   - MDF rep-by-rep trajectory for each strategy (overlay plot)
 %
-% Compatibility: MATLAB R2016b+
-% =========================================================================
+
 
 clear; clc;
 

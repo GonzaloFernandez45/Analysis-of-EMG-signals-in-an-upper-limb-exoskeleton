@@ -1,4 +1,5 @@
-% step0_mvc_vFinal.m
+% step0_mvc.m
+%
 % Extracts the MVC reference by searching for the peak activation of each
 % muscle across ALL MVC files of the subject, not just its own file.
 %
