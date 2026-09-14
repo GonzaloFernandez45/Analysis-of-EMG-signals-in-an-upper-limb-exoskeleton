@@ -1,30 +1,30 @@
-% =========================================================================
 % step3_statistics.m
-% =========================================================================
+% 
 % Paired statistical analysis: EXO vs NOEXO  (N subjects)
 %
 % Folder structure expected:
-%   [root]/[subject]/results/pre_*.mat         ← from step1
-%   [root]/[subject]/results/results/mdf5_*.mat ← from step2
+%   [root]/[subject]/results/pre_*.mat from step1
+%   [root]/[subject]/results/results/mdf5_*.mat from step2
 %
 % THREE ANALYSIS BLOCKS (Chapter 5):
-%   BLOCK 1 — Baseline RMS %MVC       EXO vs NOEXO
-%   BLOCK 2 — Post-fatigue RMS %MVC   EXO vs NOEXO
-%   BLOCK 3 — Delta MDF + endurance   EXO vs NOEXO
+%   BLOCK 1 Baseline RMS %MVC       EXO vs NOEXO
+%   BLOCK 2 Post-fatigue RMS %MVC   EXO vs NOEXO
+%   BLOCK 3 Delta MDF + endurance   EXO vs NOEXO
 %
 % Normality: Shapiro-Wilk (Royston 1992) on paired differences
-%   Normal     → paired t-test  + Cohen's d + 95% CI
-%   Non-normal → Wilcoxon signed-rank + rank-biserial r
+%   Normal paired t-test  + Cohen's d + 95% CI
+%   Non-normal Wilcoxon signed-rank + rank-biserial r
 %
 % Multiple comparisons: Bonferroni alpha = 0.05/7 for all 7-channel tests
 %   n_reps and block_duration_s: uncorrected alpha = 0.05
 %
 % Output: console tables + step3_results.mat (saved in [root])
+% Requires Statistics Toolbox
 %
-% Compatibility: MATLAB R2016b+  |  Requires Statistics Toolbox
-% =========================================================================
+
 
 clear; clc;
+addpath(fullfile(fileparts(mfilename('fullpath')), 'auxiliary'));
 
 ALPHA      = 0.05;
 N_CH       = 7;
@@ -32,9 +32,8 @@ ALPHA_BONF = ALPHA / N_CH;   % 0.00714
 
 muscle_names = {'AD','LD','PD','UT','BB','TB','ECR'};
 
-% -------------------------------------------------------------------------
-% 1. Select root folder (e.g. TFG/gente/)
-% -------------------------------------------------------------------------
+% -- Select root folder (e.g. TFG/gente/) --
+
 root = uigetdir('C:\Users\gzomo\TFG\gente', ...
     'Select root subjects folder (e.g. gente/)');
 if isequal(root, 0), error('No folder selected.'); end
@@ -45,9 +44,7 @@ is_subdir = [entries.isdir] & ~ismember({entries.name}, {'.', '..'});
 subj_dirs = entries(is_subdir);
 fprintf('Subject folders found: %d\n', numel(subj_dirs));
 
-% -------------------------------------------------------------------------
-% 2. Collect all files, parse and store in database
-% -------------------------------------------------------------------------
+% -- Collect all files, parse and store in database --
 %  db.(subjID).pre_EXO   = struct from pre_*_EXO.mat
 %  db.(subjID).pre_NOEXO = struct from pre_*_NOEXO.mat
 %  db.(subjID).mdf5_EXO  = struct from mdf5_*_EXO.mat
@@ -88,9 +85,8 @@ subj_list = fieldnames(db);
 n_subj    = numel(subj_list);
 fprintf('Subjects with data: %d\n\n', n_subj);
 
-% -------------------------------------------------------------------------
-% 3. Build paired matrices  [n_subj × 7] or [n_subj × 1]
-% -------------------------------------------------------------------------
+% -- Build paired matrices  [n_subj × 7] or [n_subj × 1] --
+
 rms_base_exo   = nan(n_subj, N_CH);
 rms_base_noexo = nan(n_subj, N_CH);
 rms_post_exo   = nan(n_subj, N_CH);
@@ -140,7 +136,7 @@ end
 fprintf('\n');
 
 % =========================================================================
-% BLOCK 1 — Baseline RMS %MVC: EXO vs NOEXO
+% BLOCK 1 Baseline RMS %MVC: EXO vs NOEXO
 % =========================================================================
 fprintf('=================================================================\n');
 fprintf('BLOCK 1: Baseline RMS %%MVC  EXO vs NOEXO\n');
@@ -150,7 +146,7 @@ res_base = run_block_7ch(rms_base_exo, rms_base_noexo, ...
                           muscle_names, ALPHA_BONF, ALPHA);
 
 % =========================================================================
-% BLOCK 2 — Post-fatigue RMS %MVC: EXO vs NOEXO
+% BLOCK 2 Post-fatigue RMS %MVC: EXO vs NOEXO
 % =========================================================================
 fprintf('\n=================================================================\n');
 fprintf('BLOCK 2: Post-fatigue RMS %%MVC  EXO vs NOEXO\n');
@@ -160,7 +156,7 @@ res_post = run_block_7ch(rms_post_exo, rms_post_noexo, ...
                           muscle_names, ALPHA_BONF, ALPHA);
 
 % =========================================================================
-% BLOCK 3A — Delta MDF: EXO vs NOEXO
+% BLOCK 3A Delta MDF: EXO vs NOEXO
 % =========================================================================
 fprintf('\n=================================================================\n');
 fprintf('BLOCK 3A: Delta MDF (Hz)  EXO vs NOEXO\n');
@@ -170,7 +166,7 @@ res_mdf = run_block_7ch(dmdf_exo, dmdf_noexo, ...
                          muscle_names, ALPHA_BONF, ALPHA);
 
 % =========================================================================
-% BLOCK 3B — Endurance outcomes
+% BLOCK 3B Endurance outcomes
 % =========================================================================
 fprintf('\n=================================================================\n');
 fprintf('BLOCK 3B: Endurance  EXO vs NOEXO  (alpha = %.2f)\n', ALPHA);

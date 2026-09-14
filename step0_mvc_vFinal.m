@@ -1,4 +1,4 @@
-%% step0_mvc_vFinal.m
+% step0_mvc_vFinal.m
 % Extracts the MVC reference by searching for the peak activation of each
 % muscle across ALL MVC files of the subject, not just its own file.
 %
@@ -13,11 +13,11 @@
 %   5. User can accept or manually adjust muscle by muscle
 %   6. Save mvc_reference.mat compatible with step1_preprocess.m
 %
-% Compatibility: MATLAB R2016b+
 
 clear; clc; close all;
+addpath(fullfile(fileparts(mfilename('fullpath')), 'auxiliary'));
 
-%% -- CONFIGURATION ----------------------------------------------------------
+% -- CONFIGURATION --
 Fs        = 2148;
 low_cut   = 20;   high_cut = 450;
 bp_order  = 4;    notch_f  = 50;
@@ -40,12 +40,12 @@ keyword_map = {
     'ECR', 7;
 };
 
-%% -- FILTERS ----------------------------------------------------------------
+% -- FILTERS --
 bw = (notch_f / (Fs/2)) / 35;
 [bn,   an]   = butter(2,          [notch_f-bw/2, notch_f+bw/2]/(Fs/2), 'stop');
 [b_bp, a_bp] = butter(bp_order/2, [low_cut, high_cut]/(Fs/2),           'bandpass');
 
-%% -- SELECT FILES -----------------------------------------------------------
+% -- SELECT FILES --
 [files, fpath] = uigetfile('*.csv', ...
     'Select ALL MVC files for this subject (multi-select)', ...
     'C:\Users\gzomo\TFG', ...
@@ -73,7 +73,7 @@ for fi = 1:n_files
     fprintf('  %d. %s\n', fi, files{fi});
 end
 
-%% -- PROCESS ALL FILES ------------------------------------------------------
+% -- PROCESS ALL FILES --
 % peak_matrix(muscle, file) = peak RMS in V
 peak_matrix = NaN(n_muscles, n_files);
 rms_data    = cell(n_files, 1);   % stored for manual mode
@@ -121,10 +121,10 @@ for fi = 1:n_files
     fprintf('\n');
 end
 
-%% -- AUTOMATIC SELECTION: maximum per muscle across all files ---------------
+% -- AUTOMATIC SELECTION: maximum per muscle across all files --
 [RMS_MVC, best_file_idx] = max(peak_matrix, [], 2);   % [7x1]
 
-%% -- SUMMARY TABLE ----------------------------------------------------------
+% -- SUMMARY TABLE --
 col_w = 9;
 sep   = repmat('-', 1, 8 + n_files * col_w + 22);
 
@@ -155,7 +155,7 @@ for m = 1:n_muscles
 end
 fprintf('%s\n\n', sep);
 
-%% -- FIGURE: grouped bar chart per muscle -----------------------------------
+% -- FIGURE: grouped bar chart per muscle --
 fig_sum = figure('Name', 'MVC Summary - peak per muscle and file', ...
                  'Position', [80 80 1000 480]);
 bar_data = peak_matrix' * 1e6;   % [n_files x n_muscles]
@@ -177,7 +177,7 @@ for m = 1:n_muscles
 end
 hold off;
 
-%% -- OPTIONAL MANUAL ADJUSTMENT ---------------------------------------------
+% -- OPTIONAL MANUAL ADJUSTMENT --
 fprintf('Adjust any muscle manually?\n');
 fprintf('  Enter muscle number (1=AD, 2=LD, 3=PD, 4=UT, 5=BB, 6=TB, 7=ECR)\n');
 fprintf('  or press Enter to accept all: ');
@@ -244,7 +244,7 @@ while ~isempty(resp)
     resp = input('', 's');
 end
 
-%% -- FINAL SUMMARY ----------------------------------------------------------
+% -- FINAL SUMMARY --
 fprintf('\n==============================================\n');
 fprintf('  FINAL MVC\n');
 fprintf('==============================================\n');
@@ -254,7 +254,7 @@ for m = 1:n_muscles
 end
 fprintf('==============================================\n\n');
 
-%% -- SAVE -------------------------------------------------------------------
+% -- SAVE --
 tok = regexp(files{1}, 'p\d+', 'match');
 if isempty(tok)
     participant = input('Participant ID not detected. Enter it (e.g. p1): ', 's');

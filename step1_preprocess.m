@@ -1,6 +1,5 @@
-% =========================================================================
 % step1_preprocess.m - Loading, filtering, block selection and RMS %MVC
-% =========================================================================
+%
 % Single preprocessing step. For each CSV file (EXO or NOEXO):
 %
 %   1. Load the raw CSV (Format A or B, auto-detected)
@@ -29,12 +28,11 @@
 %   .rms_base_mvc     [1 x 7] %MVC
 %   .rms_post_mvc     [1 x 7] %MVC
 %
-% Compatibility: MATLAB R2016b+
-% =========================================================================
 
 clear; clc;
+addpath(fullfile(fileparts(mfilename('fullpath')), 'auxiliary'));
 
-% -- Parameters -------------------------------------------------------------
+% -- Parameters --
 Fs       = 2148;
 low_cut  = 20;   high_cut = 450;
 bp_order = 4;    notch_f  = 50;
