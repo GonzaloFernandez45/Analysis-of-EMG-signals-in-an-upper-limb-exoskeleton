@@ -62,7 +62,7 @@ de rehabilitación."*
 - Lets the user select the three protocol blocks (baseline, fatigue,
   post-fatigue) via 6 clicks on the signal.
 - Computes RMS %MVC for baseline and post-fatigue using `mvc_reference.mat`.
-- Saves `pre_[name].mat`, consumed by `step2_mdf_v5.m` and
+- Saves `pre_[name].mat`, consumed by `step2_mdf.m` and
   `step3_statistics.m`.
 
 **Key Features:**
@@ -134,12 +134,12 @@ of the active pipeline.
 
 ## How to Use
 
-1. **Quality control:** run `step0_data_quality.m` on the raw recordings.
+1. **Quality control:** run `data_quality.m` on the raw recordings.
 2. **Extract MVC reference:** run `step0_mvc_vFinal.m` on the subject's MVC
    recordings.
 3. **Preprocess:** run `step1_preprocess.m` on each EXO/NOEXO CSV to filter,
    segment, and compute RMS %MVC.
-4. **Fatigue analysis:** run `step2_mdf_v5.m` to compute MDF and fatigue
+4. **Fatigue analysis:** run `step2_mdf.m` to compute MDF and fatigue
    slope per repetition.
 5. **Group statistics:** run `step3_statistics.m` across all subject
    folders to get paired EXO vs NOEXO results.
