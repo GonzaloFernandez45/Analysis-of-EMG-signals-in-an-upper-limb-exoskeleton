@@ -157,4 +157,5 @@ of the active pipeline.
 ## Author
 
 Gonzalo Fernández Eizaguirre
+
 Supervisor: Rodrigo Rodríguez Merino
